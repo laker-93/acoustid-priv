@@ -12,6 +12,7 @@ services:
       test: ["CMD", "pg_isready"]
     environment:
       POSTGRES_USER: acoustid
+      POSTGRES_PASSWORD: acoustid
       POSTGRES_DB: acoustid_priv
 
   postgres-test:
@@ -28,10 +29,11 @@ services:
       test: ["CMD", "pg_isready"]
     environment:
       POSTGRES_USER: acoustid
+      POSTGRES_PASSWORD: acoustid
       POSTGRES_DB: acoustid_priv_test
 
   api:
-    image: docker.oxygene.sk/acoustid/priv:${VERSION:-latest}
+    image: acoustidlocal:latest
     build:
       context: .
     ports:
@@ -44,7 +46,7 @@ services:
       - postgres
 
   test:
-    image: golang:1.9
+    image: golang:1.19
     command: ["go", "test", "-v", "github.com/acoustid/priv/..."]
     volumes:
       - .:/go/src/github.com/acoustid/priv
