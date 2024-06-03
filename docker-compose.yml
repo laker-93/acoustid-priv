@@ -2,35 +2,34 @@ version: "3"
 services:
 
   postgres:
-    image: postgres:alpine
+    image: postgres:11.8-alpine
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
       - ./sql/init_db.sql:/docker-entrypoint-initdb.d/10-init_db.sql
       - ./sql/schema.sql:/docker-entrypoint-initdb.d/20-schema.sql
-    healthcheck:
-      test: ["CMD", "pg_isready"]
+    #user: acoustid
     environment:
       POSTGRES_USER: acoustid
       POSTGRES_PASSWORD: acoustid
       POSTGRES_DB: acoustid_priv
 
-  postgres-test:
-    image: postgres:alpine
-    ports:
-      - "127.0.0.1:15432:5432"
-    tmpfs:
-      - /var/lib/postgres
-    volumes:
-      - ./sql/init_db.sql:/docker-entrypoint-initdb.d/10-init_db.sql
-      - ./sql/schema.sql:/docker-entrypoint-initdb.d/20-schema.sql
-      - ./sql/fixtures.sql:/docker-entrypoint-initdb.d/30-fixtures.sql
-    healthcheck:
-      test: ["CMD", "pg_isready"]
-    environment:
-      POSTGRES_USER: acoustid
-      POSTGRES_PASSWORD: acoustid
-      POSTGRES_DB: acoustid_priv_test
+  #postgres-test:
+  #  image: postgres:alpine
+  #  ports:
+  #    - "127.0.0.1:15432:5432"
+  #  tmpfs:
+  #    - /var/lib/postgres
+  #  volumes:
+  #    - ./sql/init_db.sql:/docker-entrypoint-initdb.d/10-init_db.sql
+  #    - ./sql/schema.sql:/docker-entrypoint-initdb.d/20-schema.sql
+  #    - ./sql/fixtures.sql:/docker-entrypoint-initdb.d/30-fixtures.sql
+  #  healthcheck:
+  #    test: ["CMD", "pg_isready"]
+  #  environment:
+  #    POSTGRES_USER: acoustid
+  #    POSTGRES_PASSWORD: acoustid
+  #    POSTGRES_DB: acoustid_priv_test
 
   api:
     image: acoustidlocal:latest
@@ -39,19 +38,23 @@ services:
     ports:
       - "127.0.0.1:3382:3382"
     environment:
+      ACOUSTID_PRIV_AUTH: password
+      ACOUSTID_PRIV_AUTH_USER: acoustid
+      ACOUSTID_PRIV_AUTH_PASSWORD: acoustid
       ACOUSTID_PRIV_DB_HOST: postgres
+      ACOUSTID_PRIV_DB_PASSWORD: acoustid
       ACOUSTID_PRIV_DB_NAME: acoustid_priv
       ACOUSTID_PRIV_SHUTDOWN_DELAY: 1s
     depends_on:
       - postgres
 
-  test:
-    image: golang:1.19
-    command: ["go", "test", "-v", "github.com/acoustid/priv/..."]
-    volumes:
-      - .:/go/src/github.com/acoustid/priv
-    environment:
-      ACOUSTID_PRIV_TEST_DB_HOST: postgres-test
-      ACOUSTID_PRIV_TEST_DB_NAME: acoustid_priv_test
-    depends_on:
-      - postgres-test
+  #test:
+  #  image: golang:1.19
+  #  command: ["go", "test", "-v", "github.com/acoustid/priv/..."]
+  #  volumes:
+  #    - .:/go/src/github.com/acoustid/priv
+  #  environment:
+  #    ACOUSTID_PRIV_TEST_DB_HOST: postgres-test
+  #    ACOUSTID_PRIV_TEST_DB_NAME: acoustid_priv_test
+  #  depends_on:
+  #    - postgres-test

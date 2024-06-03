@@ -1,4 +1,4 @@
-FROM golang:1.19 as builder
+FROM golang:1.21 as builder
 WORKDIR /go/src/github.com/acoustid/priv
 COPY ./ ./
 RUN go env -w GO111MODULE=auto
